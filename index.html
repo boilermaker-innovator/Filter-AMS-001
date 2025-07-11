@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alliance AMS Equipment Filter Lookup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f5f7fa;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #0066CC 0%, #003366 100%);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+
+    .search-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 15px 20px;
+        font-size: 1.2rem;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-box:focus {
+        border-color: #0066CC;
+    }
+
+    .search-btn {
+        background: #0066CC;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 15px;
+        font-weight: 600;
+        transition: background 0.3s ease;
+    }
+
+    .search-btn:hover {
+        background: #0052a3;
+    }
+
+    .results-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        display: none;
+    }
+
+    .equipment-title {
+        font-size: 1.8rem;
+        color: #0066CC;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .equipment-subtitle {
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+    }
+
+    .filter-list {
+        display: grid;
+        gap: 15px;
+    }
+
+    .filter-item {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .filter-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .filter-info {
+        flex: 1;
+    }
+
+    .filter-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .filter-details {
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .filter-code {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        color: #0066CC;
+    }
+
+    .filter-price {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #e74c3c;
+        margin-right: 15px;
+    }
+
+    .itabs-indicator {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background: #0066CC;
+        color: white;
+        border-radius: 50%;
+        font-size: 14px;
+        font-style: italic;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #003366;
+    }
+
+    .itabs-indicator:hover {
+        transform: scale(1.2);
+        background: #003366;
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+    }
+
+    /* Popup Styles */
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .popup {
+        background: white;
+        width: 90vw;
+        max-width: 600px;
+        max-height: 80vh;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.4s ease;
+        border: 3px solid #0066CC;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .popup-header {
+        background: linear-gradient(135deg, #0066CC 0%, #003366 100%);
+        color: white;
+        padding: 25px;
+        position: relative;
+    }
+
+    .popup-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .popup-code {
+        font-size: 1rem;
+        opacity: 0.9;
+        font-family: 'Courier New', monospace;
+    }
+
+    .popup-close {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .popup-content {
+        padding: 30px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .popup-content h4 {
+        color: #0066CC;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+    }
+
+    .popup-content p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+
+    .highlight-box {
+        background: #e8f4fd;
+        border-left: 4px solid #0066CC;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 15px 0;
+    }
+
+    .spec-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+    }
+
+    .spec-table th,
+    .spec-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .spec-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .filter-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+
+        .filter-price {
+            margin-right: 0;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 Alliance AMS Filter Lookup</h1>
+        <p>Find the exact filters your equipment needs - no more phone calls!</p>
+    </div>
+
+```
+<div class="container">
+    <div class="search-section">
+        <h2 style="margin-bottom: 20px; color: #2c3e50;">What equipment do you need filters for?</h2>
+        <input type="text" class="search-box" id="equipmentSearch" 
+               placeholder="Enter your equipment (e.g., Volvo L120F Loader, CAT 950M)" 
+               value="Volvo L120F Loader">
+        <br>
+        <button class="search-btn" onclick="showFilters()">Find My Filters</button>
+    </div>
+
+    <div class="results-section" id="resultsSection">
+        <div class="equipment-title">Volvo L120F Loader</div>
+        <div class="equipment-subtitle">Your equipment needs these 5 filters for complete maintenance:</div>
+        
+        <div class="filter-list">
+            <div class="filter-item">
+                <div class="filter-info">
+                    <div class="filter-name">Engine Oil Filter</div>
+                    <div class="filter-details">
+                        Code: <span class="filter-code">WZ445</span> • Replace every 500 hours • Primary engine protection
+                    </div>
+                </div>
+                <div class="filter-price">$45.00</div>
+                <span class="itabs-indicator" onclick="showFilterInfo('WZ445', 'Engine Oil Filter')">i</span>
+            </div>
+
+            <div class="filter-item">
+                <div class="filter-info">
+                    <div class="filter-name">Air Filter Primary</div>
+                    <div class="filter-details">
+                        Code: <span class="filter-code">AF789</span> • Replace every 1000 hours • Protects engine from dust
+                    </div>
+                </div>
+                <div class="filter-price">$85.00</div>
+                <span class="itabs-indicator" onclick="showFilterInfo('AF789', 'Air Filter Primary')">i</span>
+            </div>
+
+            <div class="filter-item">
+                <div class="filter-info">
+                    <div class="filter-name">Hydraulic Filter</div>
+                    <div class="filter-details">
+                        Code: <span class="filter-code">HF234</span> • Replace every 2000 hours • Keeps hydraulics clean
+                    </div>
+                </div>
+                <div class="filter-price">$120.00</div>
+                <span class="itabs-indicator" onclick="showFilterInfo('HF234', 'Hydraulic Filter')">i</span>
+            </div>
+
+            <div class="filter-item">
+                <div class="filter-info">
+                    <div class="filter-name">Fuel Filter</div>
+                    <div class="filter-details">
+                        Code: <span class="filter-code">FF156</span> • Replace every 500 hours • Clean fuel = reliable engine
+                    </div>
+                </div>
+                <div class="filter-price">$35.00</div>
+                <span class="itabs-indicator" onclick="showFilterInfo('FF156', 'Fuel Filter')">i</span>
+            </div>
+
+            <div class="filter-item">
+                <div class="filter-info">
+                    <div class="filter-name">Transmission Filter</div>
+                    <div class="filter-details">
+                        Code: <span class="filter-code">TF078</span> • Replace every 1500 hours • Smooth shifting protection
+                    </div>
+                </div>
+                <div class="filter-price">$65.00</div>
+                <span class="itabs-indicator" onclick="showFilterInfo('TF078', 'Transmission Filter')">i</span>
+            </div>
+        </div>
+
+        <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #c3e6cb;">
+            <h3 style="color: #155724; margin-bottom: 10px;">💡 Complete Filter Kit: $350.00</h3>
+            <p style="color: #155724; margin: 0;">Save $15 when you buy all filters together. Includes installation guide and maintenance schedule.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Information Popup -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup()">
+    <div class="popup" onclick="event.stopPropagation()">
+        <div class="popup-header">
+            <div class="popup-title" id="popupTitle">Filter Information</div>
+            <div class="popup-code" id="popupCode">Filter Code</div>
+            <button class="popup-close" onclick="closePopup()">&times;</button>
+        </div>
+        <div class="popup-content" id="popupContent">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show filter results
+    function showFilters() {
+        document.getElementById('resultsSection').style.display = 'block';
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Filter information database
+    const filterInfo = {
+        'WZ445': {
+            name: 'Engine Oil Filter',
+            content: `
+                <h4>What This Filter Does</h4>
+                <p>The engine oil filter removes contaminants from your engine oil, protecting critical engine components from wear and damage. This is your engine's primary defense system.</p>
+                
+                <div class="highlight-box">
+                    <strong>🎯 Key Benefits:</strong><br>
+                    • Removes dirt, metal particles, and combustion byproducts<br>
+                    • Extends engine life by preventing abrasive wear<br>
+                    • Maintains oil flow and pressure<br>
+                    • Essential for warranty compliance
+                </div>
+
+                <h4>Specifications</h4>
+                <table class="spec-table">
+                    <tr><th>Filter Code</th><td>WZ445</td></tr>
+                    <tr><th>Thread Size</th><td>M24 x 1.5</td></tr>
+                    <tr><th>Height</th><td>142mm</td></tr>
+                    <tr><th>Outside Diameter</th><td>93mm</td></tr>
+                    <tr><th>Micron Rating</th><td>25 micron</td></tr>
+                </table>
+
+                <h4>Replacement Schedule</h4>
+                <p><strong>Normal Conditions:</strong> Every 500 operating hours or 6 months<br>
+                <strong>Severe Conditions:</strong> Every 250 hours or 3 months<br>
+                <strong>Signs to Replace:</strong> Dark, thick oil or metal contamination</p>
+
+                <div class="highlight-box">
+                    <strong>⚠️ Mining Equipment Note:</strong> Dusty conditions require more frequent changes. Monitor oil condition closely in high-dust environments.
+                </div>
+            `
+        },
+        'AF789': {
+            name: 'Air Filter Primary',
+            content: `
+                <h4>What This Filter Does</h4>
+                <p>The primary air filter prevents dust, dirt, and debris from entering your engine's combustion chambers. In mining environments, this filter is absolutely critical for engine protection.</p>
+                
+                <div class="highlight-box">
+                    <strong>🎯 Key Benefits:</strong><br>
+                    • Blocks 99.5% of airborne particles<br>
+                    • Prevents premature engine wear<br>
+                    • Maintains optimal air flow for performance<br>
+                    • Essential in dusty mining conditions
+                </div>
+
+                <h4>Specifications</h4>
+                <table class="spec-table">
+                    <tr><th>Filter Code</th><td>AF789</td></tr>
+                    <tr><th>Type</th><td>Pleated Paper Element</td></tr>
+                    <tr><th>Height</th><td>280mm</td></tr>
+                    <tr><th>Outside Diameter</th><td>200mm</td></tr>
+                    <tr><th>Inside Diameter</th><td>120mm</td></tr>
+                </table>
+
+                <h4>Replacement Guidelines</h4>
+                <p><strong>Standard Schedule:</strong> Every 1000 operating hours<br>
+                <strong>Dusty Conditions:</strong> Every 500 hours or when restriction indicator shows red<br>
+                <strong>Visual Check:</strong> Replace if damaged, oily, or heavily loaded with dirt</p>
+            `
+        },
+        'HF234': {
+            name: 'Hydraulic Filter',
+            content: `
+                <h4>What This Filter Does</h4>
+                <p>The hydraulic filter keeps your hydraulic fluid clean, ensuring smooth operation of all hydraulic systems including lift arms, bucket, and steering. Clean hydraulic fluid = reliable machine operation.</p>
+                
+                <div class="highlight-box">
+                    <strong>🎯 Key Benefits:</strong><br>
+                    • Removes particles that cause system wear<br>
+                    • Prevents hydraulic pump damage<br>
+                    • Maintains precise hydraulic control<br>
+                    • Reduces costly hydraulic repairs
+                </div>
+
+                <h4>Specifications</h4>
+                <table class="spec-table">
+                    <tr><th>Filter Code</th><td>HF234</td></tr>
+                    <tr><th>Filter Type</th><td>Return Line Filter</td></tr>
+                    <tr><th>Micron Rating</th><td>10 micron</td></tr>
+                    <tr><th>Flow Rate</th><td>150 L/min</td></tr>
+                    <tr><th>Working Pressure</th><td>25 bar max</td></tr>
+                </table>
+
+                <h4>Installation Location</h4>
+                <p><strong>Location:</strong> Hydraulic tank return line<br>
+                <strong>Access:</strong> Remove side panel, filter is visible<br>
+                <strong>Replacement Time:</strong> 30 minutes with proper tools</p>
+            `
+        },
+        'FF156': {
+            name: 'Fuel Filter',
+            content: `
+                <h4>What This Filter Does</h4>
+                <p>The fuel filter removes water, dirt, and contaminants from diesel fuel before it reaches your engine's injection system. Critical for modern high-pressure fuel systems.</p>
+                
+                <div class="highlight-box">
+                    <strong>🎯 Key Benefits:</strong><br>
+                    • Protects expensive fuel injection components<br>
+                    • Removes water that causes corrosion<br>
+                    • Prevents fuel system blockages<br>
+                    • Maintains engine performance and efficiency
+                </div>
+
+                <h4>Specifications</h4>
+                <table class="spec-table">
+                    <tr><th>Filter Code</th><td>FF156</td></tr>
+                    <tr><th>Thread</th><td>M16 x 1.5</td></tr>
+                    <tr><th>Height</th><td>90mm</td></tr>
+                    <tr><th>Micron Rating</th><td>5 micron</td></tr>
+                    <tr><th>Water Separation</th><td>95% efficiency</td></tr>
+                </table>
+
+                <h4>Important Notes</h4>
+                <p><strong>Water Drain:</strong> Check water separator weekly<br>
+                <strong>Prime After Change:</strong> Use hand primer to remove air<br>
+                <strong>Quality Fuel:</strong> Use only clean, high-quality diesel fuel</p>
+            `
+        },
+        'TF078': {
+            name: 'Transmission Filter',
+            content: `
+                <h4>What This Filter Does</h4>
+                <p>The transmission filter keeps transmission fluid clean, ensuring smooth gear changes and preventing wear in your transmission system. Essential for maintaining power transfer efficiency.</p>
+                
+                <div class="highlight-box">
+                    <strong>🎯 Key Benefits:</strong><br>
+                    • Removes metallic particles from gear wear<br>
+                    • Prevents valve body blockages<br>
+                    • Maintains smooth shifting operation<br>
+                    • Extends transmission component life
+                </div>
+
+                <h4>Specifications</h4>
+                <table class="spec-table">
+                    <tr><th>Filter Code</th><td>TF078</td></tr>
+                    <tr><th>Filter Type</th><td>Internal Suction Strainer</td></tr>
+                    <tr><th>Mesh Size</th><td>150 micron</td></tr>
+                    <tr><th>Material</th><td>Stainless Steel Mesh</td></tr>
+                </table>
+
+                <h4>Service Information</h4>
+                <p><strong>Access:</strong> Requires transmission oil pan removal<br>
+                <strong>Service Interval:</strong> Every 1500 hours or 2 years<br>
+                <strong>Fluid Change:</strong> Replace transmission fluid when changing filter</p>
+            `
+        }
+    };
+
+    // Show filter information popup
+    function showFilterInfo(code, name) {
+        document.getElementById('popupTitle').textContent = name;
+        document.getElementById('popupCode').textContent = `Code: ${code}`;
+        document.getElementById('popupContent').innerHTML = filterInfo[code].content;
+        document.getElementById('popupOverlay').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close popup
+    function closePopup() {
+        document.getElementById('popupOverlay').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closePopup();
+        }
+    });
+
+    // Auto-show results for demo
+    window.onload = function() {
+        setTimeout(showFilters, 1500);
+    };
+</script>
+```
+
+</body>
+</html>
